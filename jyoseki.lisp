@@ -72,12 +72,14 @@
            ("^(.+)：(\\d{1,2})月(\\d{1,2})日\\(.\\)$" title)
          `(("title" . ,(format nil "~A ~2,'0D月~2,'0D日"
                                hall mon day))
+           ("hall" . ,hall)
            ("date" . ,(format nil "~D-~2,'0D-~2,'0D"
                               year mon day)))))
       ;; 黒門亭
       ((ppcre:register-groups-bind (hall (#'parse-integer mon day))
            ("^(.+)(?:　|\\s+?)(\\d{1,2})月(\\d{1,2})日" title)
          `(("title" . ,(format nil "~A ~2,'0D月~2,'0D日" hall mon day))
+           ("hall" . ,hall)
            ("date" . ,(format nil "~D-~2,'0D-~2,'0D"
                               year mon day)))))
       ;; 定席番組
@@ -86,6 +88,7 @@
          (let ((year (get-year-of-month mon)))
            (multiple-value-bind (start-day end-day) (parse-jyoseki-period mon period part)
              `(("title" . ,(format nil "~A ~A月~A席~:[~;~:*(~A)~]" hall mon period part))
+               ("hall" . ,hall)
                ("date-from" . ,(format nil "~D-~2,'0D-~2,'0D" year mon start-day))
                ("date-to" . ,(format nil "~D-~2,'0D-~2,'0D" year mon end-day)))))))
       (t
