@@ -1,6 +1,7 @@
 (defpackage #:rakugokyokai-parser/jyoseki
   (:use #:cl
         #:rakugokyokai-parser/utils
+        #:rakugobot-utils
         #:lquery)
   (:import-from #:local-time)
   (:import-from #:cl-ppcre)
@@ -94,7 +95,7 @@
       (t
        `(("title" . ,title))))))
 
-(defun parse-jyoseki (body)
+(defun %parse-jyoseki-html (body)
   (let ((boxes ($ (initialize body) ".main .contents .member-detail")))
     (loop for box across boxes
           append
@@ -119,3 +120,31 @@
                                                     'list))))))
                                     'list))))))
               'list))))
+
+(defun parse-jyoseki (body)
+  (let ((res (%parse-jyoseki-html body)))
+    (loop for schedule in res
+          for tables = (aget schedule "tables")
+          append (let ((title (aget schedule "title"))
+                       (hall (normalize-hall-name (aget schedule "hall"))))
+                   (loop for table in tables
+                         collect (let ((subtitle (aget table "subtitle")))
+                                   (append
+                                    `(("title" . ,(format nil "~A ~A" title subtitle))
+                                      ("place" . ,hall)
+                                      ("address" . ,(hall-address hall))
+                                      ("start-date" . ,(aget schedule "date-from"))
+                                      ("end-date" . ,(aget schedule "date-to")))
+                                    (cond
+                                      ((equal subtitle "昼席")
+                                       (multiple-value-bind (start-time end-time)
+                                           (jyoseki-time hall 0)
+                                         `(("start-time" . ,start-time)
+                                           ("end-time" . ,end-time))))
+                                      ((equal subtitle "夜席")
+                                       (multiple-value-bind (start-time end-time)
+                                           (jyoseki-time hall 1)
+                                         `( ("start-time" . ,start-time)
+                                           ("end-time" . ,end-time))))
+                                      (t (error "Invalid subtitle: ~A" subtitle)))
+                                    `(("performers" . ,(aget table "entertainers"))))))))))
