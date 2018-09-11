@@ -5,7 +5,8 @@
   (:import-from #:local-time)
   (:import-from #:cl-ppcre)
   (:import-from #:assoc-utils
-                #:aget))
+                #:aget)
+  (:export #:parse-jyoseki))
 (in-package #:rakugokyokai-parser/jyoseki)
 
 (defparameter *base-uri*

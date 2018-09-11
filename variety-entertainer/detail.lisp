@@ -4,7 +4,8 @@
         #:lquery)
   (:import-from #:cl-ppcre)
   (:import-from #:assoc-utils
-                #:aget))
+                #:aget)
+  (:export #:parse-entertainer-detail))
 (in-package #:rakugokyokai-parser/variety-entertainer/detail)
 
 (defvar *base-uri*
